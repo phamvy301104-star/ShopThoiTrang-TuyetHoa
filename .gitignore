@@ -1,5 +1,5 @@
 node_modules/
-public/uploads/*
-!public/uploads/.gitkeep
+frontend/public/uploads/*
+!frontend/public/uploads/.gitkeep
 *.log
 .env
