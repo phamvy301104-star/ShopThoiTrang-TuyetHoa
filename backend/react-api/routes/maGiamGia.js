@@ -30,9 +30,9 @@ router.post('/check', async (req, res) => {
             .input('ma', sql.NVarChar, ma)
             .query(`
                 SELECT * FROM ma_giam_gia 
-                WHERE ma = @ma AND trang_thai = 1 
-                AND ngay_bat_dau <= GETDATE() AND ngay_ket_thuc >= GETDATE()
-                AND (so_luong_da_dung < so_luong OR so_luong IS NULL)
+                WHERE ma_code = @ma AND trang_thai = 1 
+                AND ngay_bat_dau <= GETDATE() AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= GETDATE())
+                AND (da_su_dung < so_luong OR so_luong IS NULL)
             `);
 
         if (result.recordset.length === 0) {
@@ -51,19 +51,15 @@ router.post('/check', async (req, res) => {
 
         if (coupon.loai_giam === 'phan_tram') {
             discount = tong_tien * (coupon.gia_tri / 100);
-            if (coupon.giam_toi_da && discount > coupon.giam_toi_da) {
-                discount = coupon.giam_toi_da;
-            }
         } else {
             discount = coupon.gia_tri;
         }
 
         res.json({
             valid: true,
-            ma: coupon.ma,
+            ma: coupon.ma_code,
             loai_giam: coupon.loai_giam,
             gia_tri: coupon.gia_tri,
-            giam_toi_da: coupon.giam_toi_da,
             discount: discount,
             mo_ta: coupon.mo_ta
         });
@@ -95,7 +91,7 @@ router.get('/:id', async (req, res) => {
 // Thêm mã giảm giá (Admin)
 router.post('/', async (req, res) => {
     try {
-        const { ma, mo_ta, loai_giam, gia_tri, giam_toi_da, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc } = req.body;
+        const { ma, mo_ta, loai_giam, gia_tri, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc } = req.body;
 
         if (!ma || !gia_tri) {
             return res.status(400).json({ error: 'Vui lòng nhập mã và giá trị giảm' });
@@ -106,7 +102,7 @@ router.post('/', async (req, res) => {
         // Kiểm tra mã đã tồn tại
         const checkResult = await pool.request()
             .input('ma', sql.NVarChar, ma)
-            .query('SELECT id FROM ma_giam_gia WHERE ma = @ma');
+            .query('SELECT id FROM ma_giam_gia WHERE ma_code = @ma');
 
         if (checkResult.recordset.length > 0) {
             return res.status(400).json({ error: 'Mã giảm giá đã tồn tại' });
@@ -117,15 +113,14 @@ router.post('/', async (req, res) => {
             .input('mo_ta', sql.NVarChar, mo_ta)
             .input('loai_giam', sql.NVarChar, loai_giam || 'tien')
             .input('gia_tri', sql.Decimal(15, 2), gia_tri)
-            .input('giam_toi_da', sql.Decimal(15, 2), giam_toi_da || null)
             .input('don_toi_thieu', sql.Decimal(15, 2), don_toi_thieu || null)
             .input('so_luong', sql.Int, so_luong || null)
             .input('ngay_bat_dau', sql.Date, ngay_bat_dau || new Date())
             .input('ngay_ket_thuc', sql.Date, ngay_ket_thuc)
             .query(`
-                INSERT INTO ma_giam_gia (ma, mo_ta, loai_giam, gia_tri, giam_toi_da, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc)
+                INSERT INTO ma_giam_gia (ma_code, mo_ta, loai_giam, gia_tri, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc)
                 OUTPUT INSERTED.id
-                VALUES (@ma, @mo_ta, @loai_giam, @gia_tri, @giam_toi_da, @don_toi_thieu, @so_luong, @ngay_bat_dau, @ngay_ket_thuc)
+                VALUES (@ma, @mo_ta, @loai_giam, @gia_tri, @don_toi_thieu, @so_luong, @ngay_bat_dau, @ngay_ket_thuc)
             `);
 
         res.status(201).json({
@@ -141,14 +136,13 @@ router.post('/', async (req, res) => {
 // Cập nhật mã giảm giá (Admin)
 router.put('/:id', async (req, res) => {
     try {
-        const { mo_ta, loai_giam, gia_tri, giam_toi_da, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, trang_thai } = req.body;
+        const { mo_ta, loai_giam, gia_tri, don_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, trang_thai } = req.body;
 
         const pool = await getPool();
         await pool.request()
             .input('mo_ta', sql.NVarChar, mo_ta)
             .input('loai_giam', sql.NVarChar, loai_giam)
             .input('gia_tri', sql.Decimal(15, 2), gia_tri)
-            .input('giam_toi_da', sql.Decimal(15, 2), giam_toi_da || null)
             .input('don_toi_thieu', sql.Decimal(15, 2), don_toi_thieu || null)
             .input('so_luong', sql.Int, so_luong || null)
             .input('ngay_bat_dau', sql.Date, ngay_bat_dau)
@@ -158,7 +152,7 @@ router.put('/:id', async (req, res) => {
             .query(`
                 UPDATE ma_giam_gia SET 
                     mo_ta = @mo_ta, loai_giam = @loai_giam, gia_tri = @gia_tri,
-                    giam_toi_da = @giam_toi_da, don_toi_thieu = @don_toi_thieu,
+                    don_toi_thieu = @don_toi_thieu,
                     so_luong = @so_luong, ngay_bat_dau = @ngay_bat_dau, 
                     ngay_ket_thuc = @ngay_ket_thuc, trang_thai = @trang_thai
                 WHERE id = @id

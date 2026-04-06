@@ -92,8 +92,7 @@ router.post('/login', async (req, res) => {
                 id: user.id,
                 ten_dang_nhap: user.ten_dang_nhap,
                 ho_ten: user.ho_ten,
-                vai_tro: user.vai_tro,
-                avatar: user.avatar
+                vai_tro: user.vai_tro
             }
         });
     } catch (error) {
@@ -108,7 +107,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         const pool = await getPool();
         const result = await pool.request()
             .input('id', sql.Int, req.user.id)
-            .query('SELECT id, ten_dang_nhap, ho_ten, vai_tro, avatar, email, so_dien_thoai, dia_chi FROM tai_khoan WHERE id = @id');
+            .query('SELECT id, ten_dang_nhap, ho_ten, vai_tro, email, so_dien_thoai, dia_chi FROM tai_khoan WHERE id = @id');
 
         if (result.recordset.length === 0) {
             return res.status(404).json({ error: 'Không tìm thấy người dùng' });

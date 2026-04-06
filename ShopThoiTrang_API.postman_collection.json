@@ -1,0 +1,1908 @@
+{
+  "info": {
+    "_postman_id": "shop-thoi-trang-2025",
+    "name": "Shop Thoi Trang - API Collection",
+    "description": "Bộ kiểm thử đầy đủ cho REST API hệ thống quản lý Shop Thời Trang (port 5000). Chạy request '01 - Login (Admin)' trước để lấy token tự động.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "user_token", "value": "", "type": "string" },
+    { "key": "product_id", "value": "1", "type": "string" },
+    { "key": "order_id", "value": "1", "type": "string" },
+    { "key": "category_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "TC01 - Đăng ký thành công",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Nguyen Van Test\",\n  \"ten_dang_nhap\": \"testuser001\",\n  \"mat_khau\": \"123456\",\n  \"xac_nhan\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Đăng ký tài khoản người dùng mới. Trả về 201 nếu thành công."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC01: Status 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('TC01: Response có message thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC02 - Đăng ký - Username đã tồn tại",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Lan Test\",\n  \"ten_dang_nhap\": \"Lan123\",\n  \"mat_khau\": \"Lan123\",\n  \"xac_nhan\": \"Lan123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Đăng ký với username đã tồn tại → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC02: Status 400 Bad Request', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC02: Thông báo lỗi trùng username', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('đã tồn tại');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC03 - Đăng ký - Mật khẩu quá ngắn",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test User\",\n  \"ten_dang_nhap\": \"shortpass_user\",\n  \"mat_khau\": \"123\",\n  \"xac_nhan\": \"123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Mật khẩu < 6 ký tự → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC03: Status 400 - Mật khẩu quá ngắn', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC03: Lỗi mật khẩu tối thiểu', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('6 ký tự');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC04 - Đăng ký - Xác nhận mật khẩu không khớp",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test User\",\n  \"ten_dang_nhap\": \"confirmtest01\",\n  \"mat_khau\": \"password1\",\n  \"xac_nhan\": \"password2\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Xác nhận mật khẩu không khớp → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC04: Status 400 - Xác nhận không khớp', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC04: Lỗi xác nhận mật khẩu', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('không khớp');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC05 - Đăng nhập Admin thành công ★",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ten_dang_nhap\": \"Lan123\",\n  \"mat_khau\": \"Lan123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Đăng nhập Admin. Token sẽ được tự động lưu vào biến {{token}}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC05: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC05: Response trả về token JWT', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('token');",
+                  "  pm.expect(json.token).to.be.a('string').and.not.empty;",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('Admin Token saved: ' + json.token.substring(0, 40) + '...');",
+                  "});",
+                  "pm.test('TC05: User info có vai_tro=admin', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.user.vai_tro).to.equal('admin');",
+                  "  pm.expect(json.user.ten_dang_nhap).to.equal('Lan123');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC06 - Đăng nhập - Sai mật khẩu",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ten_dang_nhap\": \"Lan123\",\n  \"mat_khau\": \"SaiMatKhau\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Sai mật khẩu → 401 Unauthorized."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC06: Status 401 Unauthorized', function() { pm.response.to.have.status(401); });",
+                  "pm.test('TC06: Thông báo lỗi xác thực', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('error');",
+                  "  pm.expect(json.error).to.include('không đúng');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC07 - Đăng nhập - Thiếu thông tin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ten_dang_nhap\": \"Lan123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Thiếu trường mat_khau → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC07: Status 400 - Thiếu thông tin', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC07: Thông báo nhập đầy đủ', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('đầy đủ');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC08 - Lấy thông tin bản thân (GET /me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] },
+            "description": "Lấy thông tin user từ JWT token hợp lệ."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC08: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC08: Trả về thông tin user', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.expect(json).to.have.property('ten_dang_nhap');",
+                  "  pm.expect(json).to.have.property('vai_tro');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC09 - GET /me không có token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] },
+            "description": "Không gửi token → 401 Unauthorized."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC09: Status 401 - Không có token', function() { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC10 - GET /me token giả mạo",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiJ9.faketoken.faketoken" }],
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] },
+            "description": "Token không hợp lệ → 403 Forbidden."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC10: Status 403 - Token không hợp lệ', function() { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC11 - Cập nhật thông tin cá nhân",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Quan Tri Vien Updated\",\n  \"email\": \"admin@shopthoitrang.vn\",\n  \"so_dien_thoai\": \"0901234567\",\n  \"dia_chi\": \"123 Duong ABC, TP. Can Tho\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/profile", "host": ["{{base_url}}"], "path": ["api", "auth", "profile"] },
+            "description": "Cập nhật ho_ten, email, so_dien_thoai, dia_chi."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC11: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC11: Cập nhật thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC12 - Đổi mật khẩu",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mat_khau_cu\": \"Lan123\",\n  \"mat_khau_moi\": \"Lan123\",\n  \"xac_nhan\": \"Lan123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/change-password", "host": ["{{base_url}}"], "path": ["api", "auth", "change-password"] },
+            "description": "Đổi mật khẩu (dùng lại mật khẩu cũ để không bị mất đăng nhập)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC12: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC12: Đổi mật khẩu thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Sản phẩm (Public)",
+      "item": [
+        {
+          "name": "TC13 - Lấy danh sách sản phẩm (mặc định)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham?page=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Lấy trang 1, 5 sản phẩm/trang. Không cần auth."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC13: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC13: Trả về data và pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json).to.have.property('pagination');",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.pagination).to.have.property('total');",
+                  "  pm.expect(json.pagination).to.have.property('totalPages');",
+                  "  if(json.data.length > 0) {",
+                  "    pm.collectionVariables.set('product_id', json.data[0].id);",
+                  "    console.log('product_id set to: ' + json.data[0].id);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC14 - Tìm kiếm sản phẩm theo tên",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham?search=áo&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham"],
+              "query": [
+                { "key": "search", "value": "áo" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Tìm kiếm theo từ khóa 'áo'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC14: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC14: Kết quả tìm kiếm trả về array', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC15 - Lọc sản phẩm theo danh mục",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham?danh_muc=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham"],
+              "query": [{ "key": "danh_muc", "value": "1" }]
+            },
+            "description": "Lọc sản phẩm theo danh mục id=1."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC15: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC15: Tất cả SP cùng danh mục', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  json.data.forEach(item => {",
+                  "    pm.expect(item.danh_muc_id).to.equal(1);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC16 - Lọc theo giới tính",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham?gioi_tinh=Nam",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham"],
+              "query": [{ "key": "gioi_tinh", "value": "Nam" }]
+            },
+            "description": "Lọc sản phẩm dành cho Nam."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC16: Status 200 OK', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC17 - Lấy sản phẩm mới nhất",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham/newest?limit=8",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham", "newest"],
+              "query": [{ "key": "limit", "value": "8" }]
+            },
+            "description": "Lấy 8 sản phẩm mới nhất cho trang chủ."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC17: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC17: Trả về array tối đa 8 phần tử', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "  pm.expect(json.length).to.be.at.most(8);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC18 - Lấy chi tiết sản phẩm hợp lệ",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham", "{{product_id}}"]
+            },
+            "description": "Lấy chi tiết 1 sản phẩm theo ID. Kèm sản phẩm liên quan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC18: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC18: Có đầy đủ thông tin sản phẩm', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.expect(json).to.have.property('ten_sp');",
+                  "  pm.expect(json).to.have.property('gia_ban');",
+                  "  pm.expect(json).to.have.property('sanPhamLienQuan');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC19 - Lấy chi tiết - ID không tồn tại",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/san-pham/99999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "san-pham", "99999"]
+            },
+            "description": "ID không tồn tại → 404 Not Found."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC19: Status 404 Not Found', function() { pm.response.to.have.status(404); });",
+                  "pm.test('TC19: Thông báo không tìm thấy', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('không tìm thấy');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Sản phẩm (Admin CRUD)",
+      "item": [
+        {
+          "name": "TC20 - Admin xem tất cả SP (kể cả ẩn)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham?all=true&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham"],
+              "query": [
+                { "key": "all", "value": "true" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Admin có thể xem cả sản phẩm đang ẩn (trang_thai=0)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC20: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC20: Có dữ liệu SP + pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json).to.have.property('pagination');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC21 - Thêm sản phẩm mới (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "ma_sp", "value": "SP999", "type": "text" },
+                { "key": "ten_sp", "value": "Áo Test Postman", "type": "text" },
+                { "key": "danh_muc_id", "value": "1", "type": "text" },
+                { "key": "gia_nhap", "value": "80000", "type": "text" },
+                { "key": "gia_ban", "value": "150000", "type": "text" },
+                { "key": "so_luong", "value": "50", "type": "text" },
+                { "key": "kich_thuoc", "value": "M", "type": "text" },
+                { "key": "mau_sac", "value": "Trắng", "type": "text" },
+                { "key": "chat_lieu", "value": "Cotton", "type": "text" },
+                { "key": "gioi_tinh", "value": "Unisex", "type": "text" },
+                { "key": "mo_ta", "value": "Áo test tạo từ Postman", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham"]
+            },
+            "description": "Tạo sản phẩm mới dùng multipart/form-data (hỗ trợ upload ảnh)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC21: Status 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('TC21: Trả về id sản phẩm mới', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.collectionVariables.set('product_id', json.id);",
+                  "  console.log('New product id: ' + json.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC22 - Thêm SP - Mã trùng lặp",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "ma_sp", "value": "SP001", "type": "text" },
+                { "key": "ten_sp", "value": "Test Trùng Mã", "type": "text" },
+                { "key": "gia_ban", "value": "100000", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham"]
+            },
+            "description": "SP001 đã tồn tại → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC22: Status 400 - Mã SP trùng', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC22: Thông báo mã đã tồn tại', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('đã tồn tại');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC23 - Thêm SP - User thường (403)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{user_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "ma_sp", "value": "SP_HACK", "type": "text" },
+                { "key": "ten_sp", "value": "Hack test", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham"]
+            },
+            "description": "Token người dùng thường không có quyền admin → 403 Forbidden."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC23: Status 403 Forbidden (nếu có user token) hoặc 401', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC24 - Cập nhật sản phẩm (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "ma_sp", "value": "SP999", "type": "text" },
+                { "key": "ten_sp", "value": "Áo Test Postman (Updated)", "type": "text" },
+                { "key": "danh_muc_id", "value": "1", "type": "text" },
+                { "key": "gia_nhap", "value": "85000", "type": "text" },
+                { "key": "gia_ban", "value": "160000", "type": "text" },
+                { "key": "so_luong", "value": "45", "type": "text" },
+                { "key": "kich_thuoc", "value": "L", "type": "text" },
+                { "key": "mau_sac", "value": "Đen", "type": "text" },
+                { "key": "chat_lieu", "value": "Cotton Premium", "type": "text" },
+                { "key": "gioi_tinh", "value": "Nam", "type": "text" },
+                { "key": "trang_thai", "value": "true", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham", "{{product_id}}"]
+            },
+            "description": "Cập nhật sản phẩm theo ID."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC24: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC24: Cập nhật thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC25 - Xóa (ẩn) sản phẩm (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/san-pham/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "san-pham", "{{product_id}}"]
+            },
+            "description": "Soft delete: đặt trang_thai=0, không xóa khỏi CSDL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC25: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC25: Xóa thành công (soft delete)', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Danh mục",
+      "item": [
+        {
+          "name": "TC26 - Lấy danh sách danh mục (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/danh-muc", "host": ["{{base_url}}"], "path": ["api", "danh-muc"] },
+            "description": "Lấy danh mục đang hoạt động (trang_thai=1). Public."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC26: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC26: Trả về array danh mục', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "  if(json.length > 0) pm.collectionVariables.set('category_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC27 - Lấy chi tiết danh mục",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/danh-muc/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "danh-muc", "{{category_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC27: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC27: Có trường ten_danh_muc', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('ten_danh_muc');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC28 - Admin thêm danh mục",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ten_danh_muc\": \"Đồ bơi Postman Test\",\n  \"mo_ta\": \"Danh mục tạo từ Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/danh-muc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "danh-muc"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC28: Status 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('TC28: Trả về id danh mục mới', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.collectionVariables.set('category_id', json.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC29 - Admin xóa danh mục",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/danh-muc/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "danh-muc", "{{category_id}}"]
+            },
+            "description": "Xóa (ẩn) danh mục vừa tạo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC29: Status 200 OK', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Đơn hàng",
+      "item": [
+        {
+          "name": "TC30 - Tạo đơn hàng (User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Nguyen Van An\",\n  \"so_dien_thoai\": \"0901234567\",\n  \"dia_chi\": \"123 Nguyen Hue, Q.1, TP.HCM\",\n  \"phuong_thuc_tt\": \"cod\",\n  \"ghi_chu\": \"Giao trong gio hanh chinh\",\n  \"items\": [\n    { \"san_pham_id\": 1, \"so_luong\": 2 },\n    { \"san_pham_id\": 2, \"so_luong\": 1 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/don-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang"]
+            },
+            "description": "Tạo đơn hàng mới. Transaction DB: kiểm tra tồn kho, tạo đơn, trừ kho."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC30: Status 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('TC30: Trả về ma_dh', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.expect(json).to.have.property('ma_dh');",
+                  "  pm.collectionVariables.set('order_id', json.id);",
+                  "  console.log('Created order: ' + json.ma_dh + ', id=' + json.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC31 - Tạo đơn hàng - Giỏ trống",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test User\",\n  \"so_dien_thoai\": \"0900000000\",\n  \"dia_chi\": \"Test address\",\n  \"items\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/don-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang"]
+            },
+            "description": "items rỗng → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC31: Status 400 - Giỏ hàng trống', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC31: Thông báo giỏ trống', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('trống');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC32 - Tạo đơn hàng - Không có token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test\",\n  \"so_dien_thoai\": \"000\",\n  \"dia_chi\": \"abc\",\n  \"items\": [{\"san_pham_id\": 1, \"so_luong\": 1}]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/don-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang"]
+            },
+            "description": "Không có JWT → 401 Unauthorized."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC32: Status 401 Unauthorized', function() { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC33 - Tạo đơn - Số lượng vượt tồn kho",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test Vuot Kho\",\n  \"so_dien_thoai\": \"0900000001\",\n  \"dia_chi\": \"Test address\",\n  \"items\": [{\"san_pham_id\": 1, \"so_luong\": 99999}]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/don-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang"]
+            },
+            "description": "Đặt 99999 sản phẩm trong khi kho không đủ → 400 Bad Request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC33: Status 400 - Vượt tồn kho', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC33: Thông báo lỗi tồn kho', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('còn');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC34 - Tạo đơn có mã giảm giá",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test Ma Giam Gia\",\n  \"so_dien_thoai\": \"0900000002\",\n  \"dia_chi\": \"Test address\",\n  \"phuong_thuc_tt\": \"chuyen_khoan\",\n  \"ma_giam_gia\": \"SALE10\",\n  \"items\": [{\"san_pham_id\": 1, \"so_luong\": 1}]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/don-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang"]
+            },
+            "description": "Đặt hàng có áp dụng mã giảm giá SALE10 (nếu còn hợp lệ)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC34: Status 201 hoặc 400 (mã không hợp lệ)', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC35 - Lấy đơn hàng của tôi",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/don-hang/my-orders?page=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang", "my-orders"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Lấy danh sách đơn hàng của user đang đăng nhập."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC35: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC35: Trả về data + pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json).to.have.property('pagination');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC36 - Lấy chi tiết đơn hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/don-hang/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "don-hang", "{{order_id}}"]
+            },
+            "description": "Xem chi tiết đơn hàng, bao gồm danh sách sản phẩm."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC36: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC36: Có trường chiTiet', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('ma_dh');",
+                  "  pm.expect(json).to.have.property('chiTiet');",
+                  "  pm.expect(json.chiTiet).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC37 - Admin lấy tất cả đơn hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/don-hang?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "don-hang"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC37: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC37: Có data + pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC38 - Admin lọc đơn theo trạng thái",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/don-hang?trang_thai=cho_xac_nhan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "don-hang"],
+              "query": [{ "key": "trang_thai", "value": "cho_xac_nhan" }]
+            },
+            "description": "Lọc chỉ đơn đang chờ xác nhận."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC38: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC38: Tất cả đơn có trang_thai=cho_xac_nhan', function() {",
+                  "  const json = pm.response.json();",
+                  "  json.data.forEach(item => {",
+                  "    pm.expect(item.trang_thai).to.equal('cho_xac_nhan');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC39 - Admin cập nhật trạng thái đơn",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trang_thai\": \"da_xac_nhan\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/don-hang/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "don-hang", "{{order_id}}"]
+            },
+            "description": "Cập nhật trạng thái: cho_xac_nhan → da_xac_nhan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC39: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC39: Cập nhật trạng thái thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC40 - Admin cập nhật TT - User thường (403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"trang_thai\": \"da_giao\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/don-hang/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "don-hang", "1"]
+            },
+            "description": "User thường không có quyền → 401 hoặc 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC40: Status 401 hoặc 403', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Mã giảm giá",
+      "item": [
+        {
+          "name": "TC41 - Kiểm tra mã giảm giá hợp lệ (Public)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma\": \"SALE10\",\n  \"tong_tien\": 500000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ma-giam-gia/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ma-giam-gia", "check"]
+            },
+            "description": "Kiểm tra mã SALE10, tổng tiền 500.000đ. Không cần auth."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC41: Status 200 hoặc 400 (mã không tồn tại)', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "if(pm.response.code === 200) {",
+                  "  pm.test('TC41: Mã hợp lệ - có trường discount', function() {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('discount');",
+                  "    pm.expect(json.valid).to.be.true;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC42 - Kiểm tra mã giảm giá không tồn tại",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma\": \"MAGIAKHONGTON\",\n  \"tong_tien\": 100000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ma-giam-gia/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ma-giam-gia", "check"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC42: Status 400 - Mã không tồn tại', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC42: Thông báo mã không hợp lệ', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC43 - Admin lấy danh sách mã giảm giá",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ma-giam-gia",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "ma-giam-gia"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC43: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC43: Trả về array', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC44 - Admin thêm mã giảm giá",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ma\": \"POSTMAN20\",\n  \"mo_ta\": \"Mã test từ Postman - giảm 20%\",\n  \"loai_giam\": \"phan_tram\",\n  \"gia_tri\": 20,\n  \"giam_toi_da\": 100000,\n  \"don_toi_thieu\": 200000,\n  \"so_luong\": 10,\n  \"ngay_bat_dau\": \"2025-01-01\",\n  \"ngay_ket_thuc\": \"2025-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/ma-giam-gia",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "ma-giam-gia"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC44: Status 201 Created', function() { pm.response.to.have.status(201); });",
+                  "pm.test('TC44: Trả về id mới', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Khách hàng (Admin)",
+      "item": [
+        {
+          "name": "TC45 - Admin lấy danh sách khách hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/khach-hang?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "khach-hang"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC45: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC45: Có data + pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC46 - Admin tìm kiếm khách hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/khach-hang?search=Nguyen",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "khach-hang"],
+              "query": [{ "key": "search", "value": "Nguyen" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC46: Status 200 OK', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC47 - User thường không xem được KH (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{user_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/khach-hang",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "khach-hang"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC47: Status 401 hoặc 403', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Liên hệ",
+      "item": [
+        {
+          "name": "TC48 - Gửi liên hệ (Public)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Nguyen Van Test\",\n  \"email\": \"test@example.com\",\n  \"so_dien_thoai\": \"0901234567\",\n  \"tieu_de\": \"Test tu Postman\",\n  \"noi_dung\": \"Day la noi dung lien he test tu Postman API\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lien-he",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lien-he"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC48: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC48: Gửi thành công', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('thành công');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC49 - Gửi liên hệ - Thiếu email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"Test User\",\n  \"tieu_de\": \"Test\",\n  \"noi_dung\": \"Noi dung\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/lien-he",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lien-he"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC49: Status 400 - Thiếu email', function() { pm.response.to.have.status(400); });",
+                  "pm.test('TC49: Thông báo nhập đầy đủ', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('đầy đủ');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC50 - Admin xem danh sách liên hệ",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/lien-he?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "lien-he"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC50: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC50: Có data + pagination', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. Thống kê (Admin only)",
+      "item": [
+        {
+          "name": "TC51 - Dashboard tổng quan",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/thong-ke/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "thong-ke", "dashboard"]
+            },
+            "description": "Lấy thống kê dashboard: tổng SP, đơn hàng, doanh thu, top SP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC51: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC51: Có đủ các trường thống kê', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('tongSanPham');",
+                  "  pm.expect(json).to.have.property('tongDonHang');",
+                  "  pm.expect(json).to.have.property('doanhThu');",
+                  "  pm.expect(json).to.have.property('tongKhachHang');",
+                  "  pm.expect(json).to.have.property('doanhThuTheoNgay');",
+                  "  pm.expect(json).to.have.property('topSanPham');",
+                  "  pm.expect(json).to.have.property('donHangMoi');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC52 - Doanh thu theo ngày (có khoảng thời gian)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/thong-ke/revenue?from=2025-01-01&to=2025-12-31&group_by=month",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "thong-ke", "revenue"],
+              "query": [
+                { "key": "from", "value": "2025-01-01" },
+                { "key": "to", "value": "2025-12-31" },
+                { "key": "group_by", "value": "month" }
+              ]
+            },
+            "description": "Thống kê doanh thu nhóm theo tháng trong năm 2025."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC52: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC52: Dữ liệu doanh thu là array', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "  if(json.length > 0) {",
+                  "    pm.expect(json[0]).to.have.property('thoi_gian');",
+                  "    pm.expect(json[0]).to.have.property('doanh_thu');",
+                  "    pm.expect(json[0]).to.have.property('so_don_hang');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC53 - Doanh thu nhóm theo năm",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/thong-ke/revenue?group_by=year",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "thong-ke", "revenue"],
+              "query": [{ "key": "group_by", "value": "year" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC53: Status 200 OK', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC54 - Dashboard - Nhân viên truy cập (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{user_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/thong-ke/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "thong-ke", "dashboard"]
+            },
+            "description": "Chỉ Admin mới được thống kê. User thường → 401 hoặc 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC54: Status 401 hoặc 403', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Nhân viên (Admin only)",
+      "item": [
+        {
+          "name": "TC55 - Admin lấy danh sách nhân viên",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/nhan-vien?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "nhan-vien"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC55: Status 200 OK', function() { pm.response.to.have.status(200); });",
+                  "pm.test('TC55: Có data nhân viên', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC56 - Nhân viên/User truy cập NV (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{user_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/nhan-vien",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "nhan-vien"]
+            },
+            "description": "Chỉ Admin mới được quản lý nhân viên."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC56: Status 401 hoặc 403 - Không đủ quyền', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Kiểm thử bảo mật",
+      "item": [
+        {
+          "name": "TC57 - SQL Injection (Login)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ten_dang_nhap\": \"' OR '1'='1\",\n  \"mat_khau\": \"' OR '1'='1\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Thử SQL Injection vào trường đăng nhập. Hệ thống dùng parameterized queries nên phải bị chặn."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC57: SQL Injection bị chặn - Không được trả 200', function() {",
+                  "  pm.expect(pm.response.code).to.not.equal(200);",
+                  "  pm.expect(pm.response.code).to.be.oneOf([401, 400, 500]);",
+                  "  console.log('SQL Injection test result: ' + pm.response.status);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC58 - XSS trong body (Register)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ho_ten\": \"<script>alert('xss')</script>\",\n  \"ten_dang_nhap\": \"xss_test_user\",\n  \"mat_khau\": \"password123\",\n  \"xac_nhan\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Nhập XSS script vào trường ho_ten. API lưu dạng text, không thực thi."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC58: XSS không gây crash server', function() {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+                  "  console.log('XSS test status: ' + pm.response.status);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC59 - JWT đã bị chỉnh sửa (Tampered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidGVuX2RhbmdfbmhhcCI6IkxhbjEyMyIsInZhaV90cm8iOiJhZG1pbiJ9.TAMPERED_SIGNATURE" }
+            ],
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] },
+            "description": "Token bị thay đổi phần signature → 403 Forbidden."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC59: JWT giả mạo bị từ chối - Status 403', function() {",
+                  "  pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC60 - Truy cập API endpoint không tồn tại",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/khong-ton-tai",
+              "host": ["{{base_url}}"],
+              "path": ["api", "khong-ton-tai"]
+            },
+            "description": "Endpoint không tồn tại → 404 Not Found."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC60: Status 404 Not Found', function() { pm.response.to.have.status(404); });",
+                  "pm.test('TC60: Thông báo lỗi JSON', function() {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -33,7 +33,7 @@ const { authenticateToken, isAdmin, isStaff } = require('./middleware/auth');
 app.use('/api/auth', authRouter);
 app.use('/api/san-pham', sanPhamRouter);
 app.use('/api/danh-muc', danhMucRouter);
-app.use('/api/ma-giam-gia/check', require('./routes/maGiamGia'));
+app.use('/api/ma-giam-gia', maGiamGiaRouter);
 app.use('/api/lien-he', lienHeRouter);
 
 // User routes (cần đăng nhập)

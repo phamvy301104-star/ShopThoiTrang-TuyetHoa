@@ -228,22 +228,43 @@ router.post('/', async (req, res) => {
 
         const thanhToan = tongTien - giamGia;
 
+        // Tìm hoặc tạo khách hàng từ thông tin giao hàng
+        let khachHangId = null;
+        const khResult = await new sql.Request(transaction)
+            .input('so_dien_thoai', sql.NVarChar, so_dien_thoai)
+            .query('SELECT id FROM khach_hang WHERE so_dien_thoai = @so_dien_thoai');
+        
+        if (khResult.recordset.length > 0) {
+            khachHangId = khResult.recordset[0].id;
+            // Cập nhật thông tin mới nhất
+            await new sql.Request(transaction)
+                .input('id', sql.Int, khachHangId)
+                .input('ho_ten', sql.NVarChar, ho_ten)
+                .input('dia_chi', sql.NVarChar, dia_chi)
+                .query('UPDATE khach_hang SET ho_ten = @ho_ten, dia_chi = @dia_chi WHERE id = @id');
+        } else {
+            const khInsert = await new sql.Request(transaction)
+                .input('ho_ten', sql.NVarChar, ho_ten)
+                .input('so_dien_thoai', sql.NVarChar, so_dien_thoai)
+                .input('dia_chi', sql.NVarChar, dia_chi)
+                .query('INSERT INTO khach_hang (ho_ten, so_dien_thoai, dia_chi) OUTPUT INSERTED.id VALUES (@ho_ten, @so_dien_thoai, @dia_chi)');
+            khachHangId = khInsert.recordset[0].id;
+        }
+
         // Tạo đơn hàng
         const insertResult = await new sql.Request(transaction)
             .input('ma_dh', sql.NVarChar, maDH)
             .input('tai_khoan_id', sql.Int, req.user.id)
-            .input('ho_ten', sql.NVarChar, ho_ten)
-            .input('so_dien_thoai', sql.NVarChar, so_dien_thoai)
-            .input('dia_chi', sql.NVarChar, dia_chi)
+            .input('khach_hang_id', sql.Int, khachHangId)
             .input('tong_tien', sql.Decimal(15, 2), tongTien)
             .input('giam_gia', sql.Decimal(15, 2), giamGia)
             .input('thanh_toan', sql.Decimal(15, 2), thanhToan)
-            .input('phuong_thuc_tt', sql.NVarChar, phuong_thuc_tt || 'cod')
+            .input('phuong_thuc_tt', sql.NVarChar, phuong_thuc_tt || 'tien_mat')
             .input('ghi_chu', sql.NVarChar(sql.MAX), ghi_chu)
             .query(`
-                INSERT INTO don_hang (ma_dh, tai_khoan_id, ho_ten, so_dien_thoai, dia_chi, tong_tien, giam_gia, thanh_toan, phuong_thuc_tt, ghi_chu) 
+                INSERT INTO don_hang (ma_dh, tai_khoan_id, khach_hang_id, tong_tien, giam_gia, thanh_toan, phuong_thuc_tt, ghi_chu) 
                 OUTPUT INSERTED.id 
-                VALUES (@ma_dh, @tai_khoan_id, @ho_ten, @so_dien_thoai, @dia_chi, @tong_tien, @giam_gia, @thanh_toan, @phuong_thuc_tt, @ghi_chu)
+                VALUES (@ma_dh, @tai_khoan_id, @khach_hang_id, @tong_tien, @giam_gia, @thanh_toan, @phuong_thuc_tt, @ghi_chu)
             `);
 
         const donHangId = insertResult.recordset[0].id;
@@ -281,8 +302,17 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Cập nhật trạng thái đơn hàng (Admin)
+// Cập nhật trạng thái đơn hàng (Admin) - hỗ trợ cả PUT /:id và PUT /:id/status
+router.put('/:id', async (req, res) => {
+    req.params.id = req.params.id;
+    return donHangStatusHandler(req, res);
+});
+
 router.put('/:id/status', async (req, res) => {
+    return donHangStatusHandler(req, res);
+});
+
+async function donHangStatusHandler(req, res) {
     try {
         const { trang_thai } = req.body;
         const validStatuses = ['cho_xac_nhan', 'da_xac_nhan', 'dang_giao', 'da_giao', 'da_huy'];
@@ -348,7 +378,7 @@ router.put('/:id/status', async (req, res) => {
         console.error('Lỗi cập nhật trạng thái:', error);
         res.status(500).json({ error: 'Có lỗi xảy ra' });
     }
-});
+}
 
 // Hủy đơn hàng (User)
 router.put('/:id/cancel', async (req, res) => {

@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
             .input('limit', sql.Int, limit)
             .query(`
                 SELECT * FROM lien_he 
-                ORDER BY ngay_tao DESC
+                ORDER BY ngay_gui DESC
                 OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
             `);
 
@@ -42,9 +42,9 @@ router.get('/', async (req, res) => {
 // Gửi liên hệ (Public)
 router.post('/', async (req, res) => {
     try {
-        const { ho_ten, email, so_dien_thoai, tieu_de, noi_dung } = req.body;
+        const { ho_ten, email, chu_de, noi_dung } = req.body;
 
-        if (!ho_ten || !email || !tieu_de || !noi_dung) {
+        if (!ho_ten || !email || !chu_de || !noi_dung) {
             return res.status(400).json({ error: 'Vui lòng nhập đầy đủ thông tin' });
         }
 
@@ -52,12 +52,11 @@ router.post('/', async (req, res) => {
         await pool.request()
             .input('ho_ten', sql.NVarChar, ho_ten)
             .input('email', sql.NVarChar, email)
-            .input('so_dien_thoai', sql.NVarChar, so_dien_thoai || null)
-            .input('tieu_de', sql.NVarChar, tieu_de)
+            .input('chu_de', sql.NVarChar, chu_de)
             .input('noi_dung', sql.NVarChar, noi_dung)
             .query(`
-                INSERT INTO lien_he (ho_ten, email, so_dien_thoai, tieu_de, noi_dung, trang_thai, ngay_tao)
-                VALUES (@ho_ten, @email, @so_dien_thoai, @tieu_de, @noi_dung, N'chua_doc', GETDATE())
+                INSERT INTO lien_he (ho_ten, email, chu_de, noi_dung, trang_thai, ngay_gui)
+                VALUES (@ho_ten, @email, @chu_de, @noi_dung, N'chua_doc', GETDATE())
             `);
 
         res.json({ message: 'Gửi liên hệ thành công' });
