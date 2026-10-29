@@ -1,0 +1,40 @@
+{% extends "shop/base.html" %}
+{% block title %}Quản lý cửa hàng | Shop Thời Trang{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h1 class="h2 mb-1">Quản lý cửa hàng</h1><p class="text-muted mb-0">Quản lý hoạt động, đơn hàng và kho sản phẩm.</p></div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'admin:index' %}">Quản trị toàn hệ thống</a>
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Tổng quan</a>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="card card-body h-100"><span>Sản phẩm</span><strong class="h3">{{ product_count }}</strong><a href="{% url 'admin:shop_product_changelist' %}">Quản lý sản phẩm</a></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body h-100"><span>Danh mục</span><strong class="h3">{{ category_count }}</strong><a href="{% url 'admin:shop_category_changelist' %}">Quản lý danh mục</a></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body h-100"><span>Đơn hàng chờ xác nhận</span><strong class="h3">{{ pending_order_count }}</strong><a href="{% url 'manage_orders' %}?status=cho_xac_nhan">Xử lý đơn hàng</a></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body h-100"><span>Sản phẩm sắp hết</span><strong class="h3">{{ low_stock_count }}</strong><a href="{% url 'admin:shop_product_changelist' %}?stock__lte=5">Kiểm tra tồn kho</a></div></div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-lg-3"><a class="btn btn-primary w-100 py-3" href="{% url 'manage_orders' %}"><i class="fas fa-receipt me-2"></i>Đơn hàng ({{ order_count }})</a></div>
+    <div class="col-12 col-md-6 col-lg-3"><a class="btn btn-outline-primary w-100 py-3" href="{% url 'inventory_receipts' %}"><i class="fas fa-boxes-stacked me-2"></i>Phiếu nhập kho</a></div>
+    <div class="col-12 col-md-6 col-lg-3"><a class="btn btn-outline-primary w-100 py-3" href="{% url 'admin:shop_customer_changelist' %}"><i class="fas fa-users me-2"></i>Khách hàng ({{ customer_count }})</a></div>
+    <div class="col-12 col-md-6 col-lg-3"><a class="btn btn-outline-primary w-100 py-3" href="{% url 'statistics' %}"><i class="fas fa-chart-line me-2"></i>Thống kê doanh thu</a></div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:shop_employee_changelist' %}">Nhân viên</a></div>
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:shop_account_changelist' %}">Tài khoản và quyền</a></div>
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:auth_group_changelist' %}">Nhóm phân quyền</a></div>
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:shop_coupon_changelist' %}">Mã giảm giá</a></div>
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:shop_contactmessage_changelist' %}">Liên hệ khách hàng</a></div>
+    <div class="col-6 col-lg-3"><a class="btn btn-light border w-100" href="{% url 'admin:shop_shopsetting_changelist' %}">Cài đặt cửa hàng</a></div>
+</div>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h4 mb-0">Đơn hàng mới</h2><a href="{% url 'manage_orders' %}">Tất cả đơn hàng</a></div>
+    <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>{% for order in recent_orders %}
+        <tr><td>{{ order.code }}</td><td>{{ order.customer|default:"Khách vãng lai" }}</td><td>{{ order.ordered_at|date:"d/m/Y H:i" }}</td><td>{{ order.total|floatformat:0 }} ₫</td><td>{{ order.get_status_display }}</td><td><a class="btn btn-sm btn-outline-primary" href="{% url 'manage_order_detail' order.id %}">Xử lý</a></td></tr>
+        {% empty %}<tr><td colspan="6" class="text-center py-4">Chưa có đơn hàng.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+{% endblock %}

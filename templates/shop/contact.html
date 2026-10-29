@@ -1,0 +1,19 @@
+{% extends "shop/base.html" %}
+{% block title %}Liên hệ | Shop Thời Trang{% endblock %}
+{% block content %}
+<h1 class="h2 mb-4">Liên hệ với chúng tôi</h1>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <form method="post" class="card card-body">{% csrf_token %}
+            <div class="mb-3"><label class="form-label" for="name">Họ tên</label><input class="form-control" id="name" name="ho_ten" value="{{ user.full_name }}" required></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" type="email" id="email" name="email" value="{{ user.email }}"></div>
+            <div class="mb-3"><label class="form-label" for="subject">Chủ đề</label><input class="form-control" id="subject" name="chu_de" required></div>
+            <div class="mb-3"><label class="form-label" for="message">Nội dung</label><textarea class="form-control" id="message" name="noi_dung" rows="5" required></textarea></div>
+            <button class="btn btn-primary" type="submit">Gửi liên hệ</button>
+        </form>
+    </div>
+    <div class="col-lg-6"><h2 class="h4">Lịch sử liên hệ</h2>
+        {% for entry in history %}<article class="border-bottom py-3"><strong>{{ entry.subject }}</strong><p class="mb-1">{{ entry.message }}</p><small class="text-muted">{{ entry.sent_at|date:"d/m/Y H:i" }}{% if entry.is_replied %} · Đã phản hồi{% endif %}</small>{% if entry.reply %}<p class="mt-2"><b>Phản hồi:</b> {{ entry.reply }}</p>{% endif %}</article>{% empty %}<p class="text-muted">Chưa có liên hệ nào.</p>{% endfor %}
+    </div>
+</div>
+{% endblock %}

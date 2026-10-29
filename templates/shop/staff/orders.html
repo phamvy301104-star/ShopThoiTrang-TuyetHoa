@@ -1,0 +1,23 @@
+{% extends "shop/base.html" %}
+{% block title %}Quản lý đơn hàng | Shop Thời Trang{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h2 mb-0">Quản lý đơn hàng</h1><a class="btn btn-outline-secondary" href="{% url 'store_management' %}">Quản lý cửa hàng</a>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-6"><label class="visually-hidden" for="order-search">Mã đơn hoặc khách hàng</label><input class="form-control" id="order-search" name="q" value="{{ query }}" placeholder="Tìm mã đơn, tên hoặc số điện thoại"></div>
+    <div class="col-md-4"><label class="visually-hidden" for="order-status">Trạng thái</label><select class="form-select" id="order-status" name="status"><option value="">Tất cả trạng thái</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Lọc đơn hàng</button></div>
+</form>
+<div class="table-responsive"><table class="table table-hover align-middle">
+    <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Thanh toán</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>{% for order in page_obj %}
+    <tr><td>{{ order.code }}</td><td>{{ order.customer|default:"Khách vãng lai" }}</td><td>{{ order.ordered_at|date:"d/m/Y H:i" }}</td><td>{{ order.total|floatformat:0 }} ₫</td><td>{{ order.get_status_display }}</td><td><a class="btn btn-sm btn-outline-primary" href="{% url 'manage_order_detail' order.id %}">Chi tiết / cập nhật</a></td></tr>
+    {% empty %}<tr><td colspan="6" class="text-center py-4">Không tìm thấy đơn hàng.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if page_obj.paginator.num_pages > 1 %}<nav aria-label="Phân trang"><ul class="pagination">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?q={{ query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.previous_page_number }}">Trước</a></li>{% endif %}
+    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?q={{ query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.next_page_number }}">Sau</a></li>{% endif %}
+</ul></nav>{% endif %}
+{% endblock %}

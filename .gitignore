@@ -3,3 +3,11 @@ frontend/public/uploads/*
 !frontend/public/uploads/.gitkeep
 *.log
 .env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+db.sqlite3
+media/
+staticfiles/
+.idea/

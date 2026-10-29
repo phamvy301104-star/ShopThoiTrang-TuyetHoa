@@ -1,0 +1,143 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% block main_class %}container-fluid p-0{% endblock %}
+{% block title %}Trang chủ | Shop Thời Trang{% endblock %}
+{% block content %}
+<style>
+    .home-hero {
+        overflow: hidden;
+        color: #fff;
+        background: #111;
+    }
+    .home-hero-promo {
+        position: relative;
+        z-index: 2;
+        padding: .55rem 1rem;
+        background: #454545;
+        color: #fff;
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-align: center;
+        text-transform: uppercase;
+    }
+    .home-hero-banner {
+        position: relative;
+        display: flex;
+        min-height: 500px;
+        align-items: center;
+        overflow: hidden;
+        background: #111;
+    }
+    .home-hero-photo {
+        position: absolute;
+        inset: 0 0 0 auto;
+        width: 70%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 34%;
+    }
+    .home-hero-banner::after {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #0b0b0b 0%, rgba(11, 11, 11, .96) 27%, rgba(11, 11, 11, .72) 49%, rgba(11, 11, 11, .12) 78%, rgba(11, 11, 11, .08) 100%);
+        content: "";
+    }
+    .home-hero-copy {
+        position: relative;
+        z-index: 1;
+        width: calc(100% - 3rem);
+        max-width: 1420px;
+        margin: 0 auto;
+        padding: 4.5rem 0;
+    }
+    .home-hero-eyebrow {
+        display: inline-block;
+        padding: .5rem 1rem;
+        border-radius: .7rem;
+        background: #c8ff00;
+        color: #101010;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .home-hero-title {
+        max-width: 13ch;
+        color: #fff;
+        font-size: clamp(2.75rem, 6vw, 5.6rem);
+        font-weight: 800;
+        letter-spacing: -.045em;
+        line-height: .98;
+        text-transform: uppercase;
+    }
+    .home-hero-description {
+        max-width: 34rem;
+        color: rgba(255, 255, 255, .86);
+        font-size: clamp(1rem, 1.5vw, 1.35rem);
+    }
+    .home-hero-cta {
+        border: 0;
+        background: #fff;
+        color: #111;
+        font-size: .95rem;
+        font-weight: 700;
+        transition: transform .2s ease, background-color .2s ease;
+    }
+    .home-hero-cta:hover {
+        transform: translateY(-2px);
+        background: #c8ff00;
+        color: #111;
+    }
+    .home-category-link {
+        border-color: #e7d6ce;
+        color: #69463a;
+        background: #fffaf7;
+    }
+    .home-category-link:hover {
+        border-color: #a96e58;
+        color: #fff;
+        background: #a96e58;
+    }
+    @media (max-width: 767.98px) {
+        .home-hero { margin-bottom: 0; }
+        .home-hero-banner { min-height: 510px; }
+        .home-hero-photo { width: 100%; object-position: 55% 30%; opacity: .68; }
+        .home-hero-banner::after {
+            background: linear-gradient(90deg, rgba(11, 11, 11, .86), rgba(11, 11, 11, .43)), linear-gradient(0deg, rgba(11, 11, 11, .36), transparent 65%);
+        }
+        .home-hero-copy { width: calc(100% - 2.5rem); padding: 3.5rem 0; }
+        .home-hero-title { font-size: clamp(2.6rem, 12vw, 4rem); }
+    }
+</style>
+<section class="home-hero">
+    <div class="home-hero-promo">Bộ sưu tập mới <span aria-hidden="true">·</span> Phong cách mỗi ngày</div>
+    <div class="home-hero-banner">
+        <img class="home-hero-photo" src="{% static 'images/home-fashion-banner.jpg' %}" alt="" fetchpriority="high">
+        <div class="home-hero-copy">
+            <p class="home-hero-eyebrow mb-3">Mẫu mới</p>
+            <h1 class="home-hero-title mb-3">Mặc chất<br> Sống đúng gu.</h1>
+            <p class="home-hero-description mb-4">Khám phá những thiết kế mới, chọn phong cách của riêng bạn và tự tin trong từng khoảnh khắc.</p>
+            <a class="btn home-hero-cta rounded-pill px-4 py-3" href="{% url 'shop' %}">Mua ngay <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></a>
+        </div>
+    </div>
+</section>
+<div class="container py-4">
+{% if categories %}
+<section class="mb-5">
+    <h2 class="h3 mb-3">Chọn phong cách của bạn</h2>
+    <div class="d-flex flex-wrap gap-2">
+        {% for category in categories %}
+        <a class="btn home-category-link rounded-pill px-3" href="{% url 'shop' %}?category={{ category.id }}">{{ category.name }} <i class="fas fa-arrow-right ms-1 small" aria-hidden="true"></i></a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><p class="text-uppercase text-muted small fw-bold mb-1">Vừa lên kệ</p><h2 class="h3 mb-0">Sản phẩm mới</h2></div><a class="text-decoration-none fw-semibold" href="{% url 'shop' %}">Xem tất cả <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
+    </div>
+    {% include "shop/_product_grid.html" with products=products %}
+</section>
+</div>
+{% endblock %}

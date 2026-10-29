@@ -1,0 +1,15 @@
+{% extends "shop/base.html" %}
+{% block title %}Quản trị | Shop Thời Trang{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4"><h1 class="h2">Quản trị webshop</h1><a class="btn btn-outline-primary" href="{% url 'store_management' %}">Quản lý cửa hàng</a></div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="card card-body"><span>Sản phẩm</span><strong class="h3">{{ product_count }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body"><span>Đơn hàng</span><strong class="h3">{{ order_count }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body"><span>Khách hàng</span><strong class="h3">{{ customer_count }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-body"><span>Doanh thu hôm nay</span><strong class="h3">{{ today_revenue|floatformat:0 }} ₫</strong></div></div>
+</div>
+<div class="row g-4">
+    <section class="col-lg-7"><h2 class="h4">Đơn hàng gần đây</h2><div class="table-responsive"><table class="table"><thead><tr><th>Mã</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody>{% for order in recent_orders %}<tr><td><a href="{% url 'manage_order_detail' order.id %}">{{ order.code }}</a></td><td>{{ order.customer|default:"Khách vãng lai" }}</td><td>{{ order.total|floatformat:0 }} ₫</td><td>{{ order.get_status_display }}</td></tr>{% empty %}<tr><td colspan="4">Chưa có đơn hàng.</td></tr>{% endfor %}</tbody></table></div><a href="{% url 'manage_orders' %}">Xem toàn bộ đơn hàng</a></section>
+    <section class="col-lg-5"><h2 class="h4">Sắp hết hàng</h2><ul class="list-group">{% for product in low_stock %}<li class="list-group-item d-flex justify-content-between"><span>{{ product.name }}</span><span class="badge bg-warning text-dark">{{ product.stock }}</span></li>{% empty %}<li class="list-group-item">Không có sản phẩm sắp hết.</li>{% endfor %}</ul></section>
+</div>
+{% endblock %}

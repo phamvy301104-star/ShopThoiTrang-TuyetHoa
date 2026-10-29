@@ -1,0 +1,17 @@
+{% extends "shop/base.html" %}
+{% block title %}Tạo phiếu nhập kho | Quản lý cửa hàng{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h2 mb-0">Tạo phiếu nhập kho</h1><a class="btn btn-outline-secondary" href="{% url 'inventory_receipts' %}">Quay lại phiếu nhập</a>
+</div>
+<form method="post" class="card card-body" style="max-width: 760px">{% csrf_token %}
+    <div class="mb-3"><label class="form-label" for="supplier">Nhà cung cấp</label><input class="form-control" id="supplier" name="supplier" maxlength="200" value="{{ form_data.supplier|default:'' }}"></div>
+    <div class="mb-3"><label class="form-label" for="product">Sản phẩm</label><select class="form-select" id="product" name="product" required><option value="">Chọn sản phẩm</option>{% for product in products %}<option value="{{ product.id }}" {% if form_data.product == product.id|stringformat:"s" %}selected{% endif %}>{{ product.code }} — {{ product.name }} (tồn {{ product.stock }})</option>{% endfor %}</select></div>
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="quantity">Số lượng nhập</label><input class="form-control" id="quantity" name="quantity" type="number" min="1" value="{{ form_data.quantity|default:'1' }}" required></div>
+        <div class="col-md-6"><label class="form-label" for="unit-price">Giá nhập mỗi sản phẩm (₫)</label><input class="form-control" id="unit-price" name="unit_price" type="number" min="0" step="0.01" value="{{ form_data.unit_price|default:'0' }}" required></div>
+    </div>
+    <div class="my-3"><label class="form-label" for="note">Ghi chú</label><textarea class="form-control" id="note" name="note" rows="3">{{ form_data.note|default:'' }}</textarea></div>
+    <div><button class="btn btn-primary">Lưu phiếu và cập nhật tồn kho</button></div>
+</form>
+{% endblock %}

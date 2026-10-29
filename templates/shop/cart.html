@@ -1,0 +1,29 @@
+{% extends "shop/base.html" %}
+{% block title %}Giỏ hàng | Shop Thời Trang{% endblock %}
+{% block content %}
+<h1 class="h2 mb-4">Giỏ hàng</h1>
+{% if items %}
+<div class="table-responsive">
+<table class="table align-middle">
+    <thead><tr><th>Sản phẩm</th><th>Giá</th><th style="width:160px">Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+    <tbody>
+    {% for item in items %}
+    <tr>
+        <td><a href="{% url 'product_detail' item.product.id %}">{{ item.product.name }}</a></td>
+        <td>{{ item.product.sale_price|floatformat:0 }} ₫</td>
+        <td><form method="post" action="{% url 'cart_update' %}" class="d-flex gap-1">{% csrf_token %}<input type="hidden" name="san_pham_id" value="{{ item.product.id }}"><input class="form-control form-control-sm" type="number" name="so_luong" min="0" max="{{ item.product.stock }}" value="{{ item.quantity }}"><button class="btn btn-sm btn-outline-primary">Lưu</button></form></td>
+        <td>{{ item.line_total|floatformat:0 }} ₫</td>
+        <td><form method="post" action="{% url 'cart_remove' item.product.id %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Xóa</button></form></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="d-flex justify-content-between align-items-center">
+    <a class="btn btn-outline-secondary" href="{% url 'shop' %}">Tiếp tục mua sắm</a>
+    <div class="text-end"><p class="h5">Tạm tính: {{ subtotal|floatformat:0 }} ₫</p><a class="btn btn-primary" href="{% url 'checkout' %}">Tiến hành đặt hàng</a></div>
+</div>
+{% else %}
+<div class="alert alert-info">Giỏ hàng đang trống. <a href="{% url 'shop' %}">Khám phá cửa hàng</a>.</div>
+{% endif %}
+{% endblock %}

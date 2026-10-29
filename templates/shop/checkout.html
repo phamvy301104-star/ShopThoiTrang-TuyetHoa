@@ -1,0 +1,25 @@
+{% extends "shop/base.html" %}
+{% block title %}Đặt hàng | Shop Thời Trang{% endblock %}
+{% block content %}
+<h1 class="h2 mb-4">Thông tin đặt hàng</h1>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form method="post" class="card card-body">{% csrf_token %}
+            <div class="mb-3"><label class="form-label" for="name">Họ tên</label><input class="form-control" id="name" name="ho_ten" value="{{ user.full_name }}" required></div>
+            <div class="mb-3"><label class="form-label" for="phone">Số điện thoại</label><input class="form-control" id="phone" name="so_dien_thoai" value="{{ user.phone }}" required></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" type="email" id="email" name="email" value="{{ user.email }}"></div>
+            <div class="mb-3"><label class="form-label" for="address">Địa chỉ giao hàng</label><input class="form-control" id="address" name="dia_chi" value="{{ user.address }}" required></div>
+            <div class="mb-3"><label class="form-label" for="payment">Phương thức thanh toán</label><select class="form-select" id="payment" name="phuong_thuc_tt"><option value="tien_mat">Tiền mặt khi nhận hàng</option><option value="chuyen_khoan">Chuyển khoản</option><option value="the">Thẻ</option></select></div>
+            <div class="mb-3"><label class="form-label" for="coupon">Mã giảm giá (nếu có)</label><input class="form-control" id="coupon" name="ma_giam_gia"></div>
+            <div class="mb-3"><label class="form-label" for="note">Ghi chú</label><textarea class="form-control" id="note" name="ghi_chu" rows="3"></textarea></div>
+            <button class="btn btn-primary" type="submit">Xác nhận đặt hàng</button>
+        </form>
+    </div>
+    <div class="col-lg-5">
+        <div class="card card-body"><h2 class="h5">Đơn hàng của bạn</h2>
+            {% for item in items %}<div class="d-flex justify-content-between py-2 border-bottom"><span>{{ item.product.name }} × {{ item.quantity }}</span><span>{{ item.line_total|floatformat:0 }} ₫</span></div>{% endfor %}
+            <div class="d-flex justify-content-between pt-3"><strong>Tổng cộng</strong><strong>{{ subtotal|floatformat:0 }} ₫</strong></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+<div class="row g-3">
+    {% for product in products %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <article class="card h-100 shadow-sm">
+            <a href="{% url 'product_detail' product.id %}" class="text-decoration-none">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height:230px;object-fit:cover">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center text-secondary" style="height:230px">Chưa có ảnh</div>
+                {% endif %}
+            </a>
+            <div class="card-body d-flex flex-column">
+                <small class="text-muted">{{ product.category.name|default:"Thời trang" }}</small>
+                <h2 class="h6 mt-1"><a href="{% url 'product_detail' product.id %}" class="text-dark text-decoration-none">{{ product.name }}</a></h2>
+                <strong class="text-danger mt-auto">{{ product.sale_price|floatformat:0 }} ₫</strong>
+                <span class="small text-muted">Còn {{ product.stock }}</span>
+                <form method="post" action="{% url 'cart_add' %}" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="san_pham_id" value="{{ product.id }}">
+                    <input type="hidden" name="so_luong" value="1">
+                    <button class="btn btn-sm btn-outline-primary w-100" type="submit">Thêm vào giỏ</button>
+                </form>
+            </div>
+        </article>
+    </div>
+    {% empty %}
+    <div class="col-12"><div class="alert alert-info">Chưa có sản phẩm phù hợp.</div></div>
+    {% endfor %}
+</div>

@@ -1,0 +1,45 @@
+{% extends "shop/base.html" %}
+{% block title %}Cửa hàng | Shop Thời Trang{% endblock %}
+{% block content %}
+<h1 class="h2 mb-4">Cửa hàng</h1>
+<div class="d-flex flex-wrap gap-2 mb-3" aria-label="Lọc nhanh theo giới tính">
+    <a class="btn btn-sm {% if not selected_gender %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'shop' %}">Tất cả</a>
+    <a class="btn btn-sm {% if selected_gender == 'Nam' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'shop' %}?gender=Nam">Thời trang nam</a>
+    <a class="btn btn-sm {% if selected_gender == 'Nữ' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'shop' %}?gender=Nữ">Thời trang nữ</a>
+    <a class="btn btn-sm {% if selected_gender == 'Unisex' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'shop' %}?gender=Unisex">Unisex</a>
+</div>
+{% if categories %}
+<div class="d-flex flex-wrap gap-2 mb-4" aria-label="Danh mục cửa hàng">
+    {% for category in categories %}
+    <a class="btn btn-sm btn-light border" href="{% url 'shop' %}?category={{ category.id }}">{{ category.name }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-5"><label class="visually-hidden" for="q">Tìm sản phẩm</label><input id="q" class="form-control" name="q" value="{{ query }}" placeholder="Tìm theo tên hoặc mã sản phẩm"></div>
+    <div class="col-md-3">
+        <label class="visually-hidden" for="category">Danh mục</label>
+        <select id="category" class="form-select" name="category">
+            <option value="">Tất cả danh mục</option>
+            {% for category in categories %}<option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="visually-hidden" for="gender">Giới tính</label>
+        <select id="gender" class="form-select" name="gender">
+            <option value="">Tất cả</option><option value="Nam" {% if selected_gender == "Nam" %}selected{% endif %}>Nam</option><option value="Nữ" {% if selected_gender == "Nữ" %}selected{% endif %}>Nữ</option><option value="Unisex" {% if selected_gender == "Unisex" %}selected{% endif %}>Unisex</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Tìm kiếm</button></div>
+</form>
+{% include "shop/_product_grid.html" with products=page_obj.object_list %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-4" aria-label="Phân trang">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?q={{ query|urlencode }}&category={{ selected_category }}&gender={{ selected_gender }}&page={{ page_obj.previous_page_number }}">Trước</a></li>{% endif %}
+        <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?q={{ query|urlencode }}&category={{ selected_category }}&gender={{ selected_gender }}&page={{ page_obj.next_page_number }}">Sau</a></li>{% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
