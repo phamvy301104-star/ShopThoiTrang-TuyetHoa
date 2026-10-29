@@ -4,24 +4,41 @@
 
 ## Chạy bằng PyCharm
 
-1. Mở thư mục gốc `WepShopThoiTrang` trong PyCharm.
-2. Chọn interpreter `.\.venv\Scripts\python.exe` (hoặc tạo virtual environment mới).
-3. Cài dependencies từ `requirements.txt` trong Terminal của PyCharm:
+Cách nhanh trên máy Windows có thể chạy trực tiếp file `setup_windows.bat` trong thư mục dự án. Script sẽ cài dependencies, tạo database bằng migrations, thêm dữ liệu mẫu và mở máy chủ.
+
+1. Mở thư mục gốc `ShopThoiTrang-TuyetHoa` trong PyCharm.
+2. Tạo môi trường Python trong Terminal nếu chưa có:
 
    ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\activate
    python -m pip install -r requirements.txt
    ```
 
-4. Tạo database và tài khoản quản trị:
+3. Tạo database và dữ liệu mẫu, sau đó chạy máy chủ:
 
    ```powershell
    python manage.py migrate
-   python manage.py createsuperuser
    python manage.py seed_catalog
+   python manage.py createsuperuser
    python manage.py runserver
    ```
 
-5. Mở `http://127.0.0.1:8000/`. Chọn **Đăng nhập quản trị** trên thanh điều hướng hoặc mở `http://127.0.0.1:8000/django-admin/`.
+   `db.sqlite3` không được lưu trên GitHub, nên **bắt buộc chạy `python manage.py migrate` sau khi clone** trước lần mở trang đầu tiên.
+
+4. Mở `http://127.0.0.1:8000/`. Chọn **Đăng nhập quản trị** trên thanh điều hướng hoặc mở `http://127.0.0.1:8000/django-admin/`.
+
+### Khắc phục lỗi `no such table: shop_category`
+
+Lỗi này có nghĩa database local chưa được tạo bảng. Trong Terminal của PyCharm, chạy từ thư mục có `manage.py`:
+
+```powershell
+python manage.py migrate
+python manage.py seed_catalog
+python manage.py runserver
+```
+
+Sau đó tải lại trang bằng `http://127.0.0.1:8000/`.
 
 Đăng nhập quản trị cần tài khoản superuser; tạo tài khoản quản trị có toàn quyền lần đầu bằng `python manage.py createsuperuser`. Không có tài khoản/mật khẩu quản trị mặc định. Khu vực quản trị Django quản lý sản phẩm, danh mục, đơn hàng, khách hàng, nhân viên, tài khoản/nhóm quyền, mã giảm giá, liên hệ, phiếu nhập kho và cài đặt. Lệnh `seed_catalog` thêm danh mục và 14 sản phẩm mẫu quần áo nam/nữ, giày nam/nữ và unisex kèm ảnh; có thể chạy lại mà không nhân đôi dữ liệu. Tạo tài khoản người mua từ trang Đăng ký.
 
